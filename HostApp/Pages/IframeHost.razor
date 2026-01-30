@@ -1,0 +1,131 @@
+@page "/iframe-host"
+@using SharedBlazor
+@using global::Shared
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<h1>Host: Iframe Embed</h1>
+
+<button @onclick="SendLinks">Send links:update</button>
+<button @onclick="TellIframeNavigate">Send nav:go (/orders/42)</button>
+
+<p><b>Status:</b> @_status</p>
+<pre style="background:#f6f6f6;padding:12px;border:1px solid #ddd;white-space:pre-wrap;">@_lastEvent</pre>
+
+<iframe @ref="_iframe" src="@IframeUrl" style="width:100%;height:520px;border:1px solid #ccc;"></iframe>
+
+@code {
+  private ElementReference _iframe;
+  private IIframeEventBus? _bus;
+  private IJSObjectReference? _busModule;
+
+  private string _status = "Initializing…";
+  private string _lastEvent = "(none)";
+
+  private const string IframeOrigin = "http://localhost:6002";
+  private const string IframeUrl = "http://localhost:6002/iframe-client";
+
+  private bool _iframeReady;
+
+  protected override async Task OnAfterRenderAsync(bool firstRender)
+  {
+    if (!firstRender) return;
+
+    _busModule = await JS.InvokeAsync<IJSObjectReference>(
+    "import",
+    "./iframeBusInterop.js"
+    );
+
+    await _busModule.InvokeVoidAsync(
+    "registerIframe",
+    _iframe
+    );
+
+
+    _bus = new IframeEventBus(JS);
+
+
+
+
+
+    _bus.Register<ReadyPayload>("ready");
+    _bus.Register<LinkClicked>("link:clicked");
+    _bus.Register<NavRequest>("nav:request");
+
+    _bus.On<ReadyPayload>("ready", p =>
+    {
+      _status = $"Iframe ready: {p.App} {p.Version}";
+      _lastEvent = $"ready: app={p.App}, version={p.Version}";
+      StateHasChanged();
+      return Task.CompletedTask;
+    });
+
+    _bus.On<LinkClicked>("link:clicked", p =>
+    {
+      _lastEvent = $"link:clicked: {p.Href}";
+      StateHasChanged();
+      return Task.CompletedTask;
+    });
+
+    _bus.On<NavRequest>("nav:request", p =>
+    {
+      _lastEvent = $"nav:request: {p.Href}";
+      StateHasChanged();
+      return Task.CompletedTask;
+    });
+
+    await _bus.StartAsync(new[] { IframeOrigin });
+    _status = "Listening…";
+    StateHasChanged();
+
+
+
+  }
+
+  private async Task SendLinks()
+  {
+    if (_bus is null) return;
+
+    var payload = new LinksUpdate(new[]
+    {
+new LinkDto("Orders (iframe route)", "/orders"),
+new LinkDto("Order #42 (iframe route)", "/orders/42"),
+new LinkDto("External: Microsoft", "https://www.microsoft.com")
+});
+
+    await _bus.PublishToIframeAsync(
+    "links:update",
+    payload,
+    IframeOrigin
+    );
+
+    _lastEvent = $"host -> iframe: links:update ({payload.Links.Count} links)";
+
+    _bus.On<ReadyPayload>("ready", p =>
+    {
+      _iframeReady = true;
+      _status = $"Iframe ready: {p.App} {p.Version}";
+      StateHasChanged();
+      return Task.CompletedTask;
+    });
+  }
+
+
+
+  private async Task TellIframeNavigate()
+  {
+    if (_bus is null) return;
+    await _bus.PublishToIframeAsync(
+    "nav:go",
+    new NavGo("/orders/42", false),
+    IframeOrigin
+    );
+    _lastEvent = "host -> iframe: nav:go /orders/42";
+
+  }
+
+  public async ValueTask DisposeAsync()
+  {
+    if (_bus is not null) await _bus.DisposeAsync();
+  }
+}

@@ -1,0 +1,15 @@
+/Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/SharedBlazor/bin/Debug/net8.0/SharedBlazor.deps.json
+/Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/SharedBlazor/bin/Debug/net8.0/SharedBlazor.dll
+/Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/SharedBlazor/bin/Debug/net8.0/SharedBlazor.pdb
+/Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/SharedBlazor/bin/Debug/net8.0/Shared.dll
+/Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/SharedBlazor/bin/Debug/net8.0/Shared.pdb
+/Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/SharedBlazor/obj/Debug/net8.0/SharedBlazor.csproj.AssemblyReference.cache
+/Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/SharedBlazor/obj/Debug/net8.0/SharedBlazor.GeneratedMSBuildEditorConfig.editorconfig
+/Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/SharedBlazor/obj/Debug/net8.0/SharedBlazor.AssemblyInfoInputs.cache
+/Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/SharedBlazor/obj/Debug/net8.0/SharedBlazor.AssemblyInfo.cs
+/Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/SharedBlazor/obj/Debug/net8.0/SharedBlazor.csproj.CoreCompileInputs.cache
+/Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/SharedBlazor/obj/Debug/net8.0/SharedBl.489DD458.Up2Date
+/Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/SharedBlazor/obj/Debug/net8.0/SharedBlazor.dll
+/Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/SharedBlazor/obj/Debug/net8.0/refint/SharedBlazor.dll
+/Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/SharedBlazor/obj/Debug/net8.0/SharedBlazor.pdb
+/Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/SharedBlazor/obj/Debug/net8.0/ref/SharedBlazor.dll

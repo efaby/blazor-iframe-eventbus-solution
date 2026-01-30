@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Shell.Host": {
+      "commandName": "Project",
+      "applicationUrl": "http://localhost:6002",
+      "dotnetRunMessages": true
+    }
+  }
+}

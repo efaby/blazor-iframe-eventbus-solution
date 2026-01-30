@@ -1,0 +1,110 @@
+@page "/iframe-client"
+@using SharedBlazor
+@using global::Shared
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+@implements IAsyncDisposable
+
+<h1>Iframe: Client</h1>
+<p><b>Status:</b> @_status</p>
+
+@if (_links.Count == 0)
+{
+  <p>(No links yet — click “Send links:update” in host.)</p>
+}
+else
+{
+  <ul>
+    @foreach (var l in _links)
+    {
+      <li>
+        <a href="" @onclick="() => OnLinkClicked(l)">@l.Text</a>
+        <span style="color:#888;"> — @l.Href</span>
+      </li>
+    }
+  </ul>
+}
+
+<hr />
+<p>Iframe routes:</p>
+<ul>
+  <li><a href="/orders">/orders</a></li>
+  <li><a href="/orders/42">/orders/42</a></li>
+</ul>
+
+@code {
+  private IIframeEventBus? _bus;
+
+  private string _status = "Initializing…";
+  private List<LinkDto> _links = new();
+
+  private const string HostOrigin = "http://localhost:6001";
+
+  protected override async Task OnAfterRenderAsync(bool firstRender)
+  {
+    if (!firstRender) return;
+
+    _bus = new IframeEventBus(JS);
+    _bus.Register<LinksUpdate>("links:update");
+    _bus.Register<NavGo>("nav:go");
+
+    _bus.On<LinksUpdate>("links:update", p =>
+    {
+      _links = p.Links.ToList();
+      _status = $"Received links:update ({_links.Count})";
+      StateHasChanged();
+      return Task.CompletedTask;
+    });
+
+    _bus.On<NavGo>("nav:go", p =>
+    {
+      _status = $"Received nav:go {p.Href}";
+      Nav.NavigateTo(p.Href, p.ForceLoad);
+      StateHasChanged();
+      return Task.CompletedTask;
+    });
+
+    await _bus.StartAsync(new[] { HostOrigin });
+
+    await _bus.PublishToParentAsync(
+    "ready",
+    new ReadyPayload("iframe", "1.0.0"),
+    HostOrigin
+    );
+
+    _status = "Ready (sent ready -> host)";
+    StateHasChanged();
+  }
+
+  private async Task OnLinkClicked(LinkDto link)
+  {
+    if (_bus is null) return;
+    await _bus.PublishToParentAsync(
+    "link:clicked",
+    new LinkClicked(link.Href),
+    HostOrigin
+    );
+
+    if (link.Href.StartsWith("/"))
+    {
+      Nav.NavigateTo(link.Href);
+      _status = $"Navigated inside iframe: {link.Href}";
+    }
+    else
+    {
+      await _bus.PublishToParentAsync(
+      "nav:request",
+      new NavRequest(link.Href),
+      HostOrigin
+      );
+      _status = $"Requested host navigate: {link.Href}";
+    }
+
+    StateHasChanged();
+  }
+
+  public async ValueTask DisposeAsync()
+  {
+    if (_bus is not null) await _bus.DisposeAsync();
+  }
+}

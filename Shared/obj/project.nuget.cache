@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "8dfL4WCNm/c=",
+  "success": true,
+  "projectFilePath": "/Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/Shared/Shared.csproj",
+  "expectedPackageFiles": [
+    "/Users/fabianvilla/.nuget/packages/microsoft.netcore.app.ref/8.0.22/microsoft.netcore.app.ref.8.0.22.nupkg.sha512",
+    "/Users/fabianvilla/.nuget/packages/microsoft.aspnetcore.app.ref/8.0.22/microsoft.aspnetcore.app.ref.8.0.22.nupkg.sha512"
+  ],
+  "logs": []
+}
