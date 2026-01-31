@@ -1,3 +1,4 @@
+@using global::Shared
 @inherits LayoutComponentBase
 
 <div class="page">
@@ -11,3 +12,23 @@
     </article>
   </main>
 </div>
+
+@inject IIframeEventBus Bus
+@inject IJSRuntime JS
+
+@code {
+
+  private const string HostOrigin = "http://localhost:6001";
+  protected override async Task OnAfterRenderAsync(bool firstRender)
+  {
+    if (!firstRender) return;
+
+    await Bus.StartAsync(new[] { HostOrigin });
+
+    await Bus.PublishToParentAsync(
+    "ready",
+    new ReadyPayload("iframe", "1.0.0"),
+    HostOrigin
+    );
+  }
+}
