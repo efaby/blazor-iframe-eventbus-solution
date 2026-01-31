@@ -9,3 +9,4 @@
 /Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/Shared/obj/Debug/net8.0/refint/Shared.dll
 /Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/Shared/obj/Debug/net8.0/Shared.pdb
 /Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/Shared/obj/Debug/net8.0/ref/Shared.dll
+/Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/Shared/obj/Debug/net8.0/Shared.sourcelink.json

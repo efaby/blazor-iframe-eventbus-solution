@@ -3,7 +3,9 @@
 @using global::Shared
 @inject IJSRuntime JS
 @inject NavigationManager Nav
-@implements IAsyncDisposable
+
+
+@inject IIframeEventBus Bus
 
 <h1>Iframe: Client</h1>
 <p><b>Status:</b> @_status</p>
@@ -33,22 +35,25 @@ else
 </ul>
 
 @code {
-  private IIframeEventBus? _bus;
-
   private string _status = "Initializing…";
   private List<LinkDto> _links = new();
-
   private const string HostOrigin = "http://localhost:6001";
 
-  protected override async Task OnAfterRenderAsync(bool firstRender)
+  protected override void OnInitialized()
   {
-    if (!firstRender) return;
+    Bus.Register<NavGo>("nav:go");
 
-    _bus = new IframeEventBus(JS);
-    _bus.Register<LinksUpdate>("links:update");
-    _bus.Register<NavGo>("nav:go");
+    Bus.On<NavGo>("nav:go", p =>
+    {
+      Nav.NavigateTo(p.Href, p.ForceLoad);
+      return Task.CompletedTask;
+    });
 
-    _bus.On<LinksUpdate>("links:update", p =>
+
+    Bus.Register<LinksUpdate>("links:update");
+
+
+    Bus.On<LinksUpdate>("links:update", p =>
     {
       _links = p.Links.ToList();
       _status = $"Received links:update ({_links.Count})";
@@ -56,30 +61,20 @@ else
       return Task.CompletedTask;
     });
 
-    _bus.On<NavGo>("nav:go", p =>
-    {
-      _status = $"Received nav:go {p.Href}";
-      Nav.NavigateTo(p.Href, p.ForceLoad);
-      StateHasChanged();
-      return Task.CompletedTask;
-    });
-
-    await _bus.StartAsync(new[] { HostOrigin });
-
-    await _bus.PublishToParentAsync(
+    Bus.PublishToParentAsync(
     "ready",
     new ReadyPayload("iframe", "1.0.0"),
     HostOrigin
     );
 
     _status = "Ready (sent ready -> host)";
-    StateHasChanged();
+
   }
 
   private async Task OnLinkClicked(LinkDto link)
   {
-    if (_bus is null) return;
-    await _bus.PublishToParentAsync(
+    if (Bus is null) return;
+    await Bus.PublishToParentAsync(
     "link:clicked",
     new LinkClicked(link.Href),
     HostOrigin
@@ -92,7 +87,7 @@ else
     }
     else
     {
-      await _bus.PublishToParentAsync(
+      await Bus.PublishToParentAsync(
       "nav:request",
       new NavRequest(link.Href),
       HostOrigin
@@ -101,10 +96,5 @@ else
     }
 
     StateHasChanged();
-  }
-
-  public async ValueTask DisposeAsync()
-  {
-    if (_bus is not null) await _bus.DisposeAsync();
   }
 }

@@ -13,3 +13,4 @@
 /Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/SharedBlazor/obj/Debug/net8.0/refint/SharedBlazor.dll
 /Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/SharedBlazor/obj/Debug/net8.0/SharedBlazor.pdb
 /Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/SharedBlazor/obj/Debug/net8.0/ref/SharedBlazor.dll
+/Users/fabianvilla/IAMQC/POCs/blazor-iframe-eventbus-solution/SharedBlazor/obj/Debug/net8.0/SharedBlazor.sourcelink.json

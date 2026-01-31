@@ -2,7 +2,7 @@
 @using SharedBlazor
 @using global::Shared
 @inject IJSRuntime JS
-@implements IAsyncDisposable
+@inject IIframeEventBus Bus
 
 <h1>Host: Iframe Embed</h1>
 
@@ -31,61 +31,52 @@
   {
     if (!firstRender) return;
 
-    _busModule = await JS.InvokeAsync<IJSObjectReference>(
+    // 1️⃣ Cargar módulo JS
+    var module = await JS.InvokeAsync<IJSObjectReference>(
     "import",
     "./iframeBusInterop.js"
     );
 
-    await _busModule.InvokeVoidAsync(
-    "registerIframe",
-    _iframe
-    );
+    // 2️⃣ Registrar iframe DOM
+    await module.InvokeVoidAsync("registerIframe", _iframe);
 
+    // 3️⃣ Registrar handlers UNA sola vez
+    Bus.Register<ReadyPayload>("ready");
+    Bus.Register<LinkClicked>("link:clicked");
+    Bus.Register<NavRequest>("nav:request");
 
-    _bus = new IframeEventBus(JS);
-
-
-
-
-
-    _bus.Register<ReadyPayload>("ready");
-    _bus.Register<LinkClicked>("link:clicked");
-    _bus.Register<NavRequest>("nav:request");
-
-    _bus.On<ReadyPayload>("ready", p =>
+    Bus.On<ReadyPayload>("ready", p =>
     {
       _status = $"Iframe ready: {p.App} {p.Version}";
-      _lastEvent = $"ready: app={p.App}, version={p.Version}";
+      _lastEvent = "ready";
       StateHasChanged();
       return Task.CompletedTask;
     });
 
-    _bus.On<LinkClicked>("link:clicked", p =>
+    Bus.On<LinkClicked>("link:clicked", p =>
     {
-      _lastEvent = $"link:clicked: {p.Href}";
+      _lastEvent = $"link clicked: {p.Href}";
       StateHasChanged();
       return Task.CompletedTask;
     });
 
-    _bus.On<NavRequest>("nav:request", p =>
+    Bus.On<NavRequest>("nav:request", p =>
     {
-      _lastEvent = $"nav:request: {p.Href}";
+      _lastEvent = $"nav request: {p.Href}";
       StateHasChanged();
       return Task.CompletedTask;
     });
 
-    await _bus.StartAsync(new[] { IframeOrigin });
+    // 4️⃣ Arrancar el bus (solo una vez)
+    await Bus.StartAsync(new[] { IframeOrigin });
+
     _status = "Listening…";
-    StateHasChanged();
-
 
 
   }
 
   private async Task SendLinks()
   {
-    if (_bus is null) return;
-
     var payload = new LinksUpdate(new[]
     {
 new LinkDto("Orders (iframe route)", "/orders"),
@@ -93,39 +84,26 @@ new LinkDto("Order #42 (iframe route)", "/orders/42"),
 new LinkDto("External: Microsoft", "https://www.microsoft.com")
 });
 
-    await _bus.PublishToIframeAsync(
+    await Bus.PublishToIframeAsync(
     "links:update",
     payload,
     IframeOrigin
     );
 
-    _lastEvent = $"host -> iframe: links:update ({payload.Links.Count} links)";
-
-    _bus.On<ReadyPayload>("ready", p =>
-    {
-      _iframeReady = true;
-      _status = $"Iframe ready: {p.App} {p.Version}";
-      StateHasChanged();
-      return Task.CompletedTask;
-    });
+    _lastEvent = "host -> iframe: links:update";
   }
 
 
 
   private async Task TellIframeNavigate()
   {
-    if (_bus is null) return;
-    await _bus.PublishToIframeAsync(
+    await Bus.PublishToIframeAsync(
     "nav:go",
     new NavGo("/orders/42", false),
     IframeOrigin
     );
-    _lastEvent = "host -> iframe: nav:go /orders/42";
 
-  }
+    _lastEvent = "host -> iframe: nav:go";
 
-  public async ValueTask DisposeAsync()
-  {
-    if (_bus is not null) await _bus.DisposeAsync();
   }
 }
